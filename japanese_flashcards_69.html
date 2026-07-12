@@ -66,7 +66,7 @@ h1{font-size:25px;margin:0;color:#374151}
 
   <div class="status">
     <span id="progressText"></span>
-    <span id="saveText">進度會自動保存於此瀏覽器</span>
+    <span id="saveText">進度會自動保存於此瀏覽器｜Space 翻面</span>
   </div>
 
   <div id="card" class="card front" role="button" tabindex="0" aria-label="點擊翻面">
@@ -232,9 +232,18 @@ el("resetBtn").onclick = () => {
   render();
 };
 document.addEventListener("keydown", e => {
+  const tag = document.activeElement?.tagName;
+  const isControl = ["BUTTON","INPUT","TEXTAREA","SELECT"].includes(tag);
   if (e.key === "ArrowRight") next();
   else if (e.key === "ArrowLeft") prev();
-  else if (e.key.toLowerCase() === "f") { state.isFlipped = !state.isFlipped; render(); }
+  else if ((e.key === " " || e.code === "Space") && !isControl) {
+    e.preventDefault();
+    state.isFlipped = !state.isFlipped;
+    render();
+  } else if (e.key.toLowerCase() === "f") {
+    state.isFlipped = !state.isFlipped;
+    render();
+  }
 });
 render();
 </script>
