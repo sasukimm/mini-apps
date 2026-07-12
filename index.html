@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japanese Study Mini Apps</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;background:#f8fafc;color:#1f2937}
+main{max-width:850px;margin:auto;padding:55px 20px}
+h1{font-size:36px;margin:0 0 10px}
+.subtitle{color:#64748b;margin-bottom:32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.card{display:block;text-decoration:none;color:inherit;background:white;border:1px solid #e2e8f0;border-radius:20px;padding:24px;box-shadow:0 8px 22px #0000000d;transition:.2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 28px #00000016}
+.icon{font-size:38px}.title{font-size:22px;font-weight:800;margin:12px 0 8px}.desc{color:#64748b;line-height:1.55}
+.note{margin-top:28px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+  <h1>📚 Japanese Study Mini Apps</h1>
+  <div class="subtitle">選擇一組 Flashcards 開始溫習</div>
+  <div class="grid">
+    <a class="card" href="japanese_flashcards_16.html">
+      <div class="icon">🗣️</div>
+      <div class="title">擬聲詞／擬態詞</div>
+      <div class="desc">16 個詞彙，包含正向及反向測試、例句與答題統計。</div>
+    </a>
+    <a class="card" href="japanese_flashcards_69.html">
+      <div class="icon">🇯🇵</div>
+      <div class="title">期終考試生字</div>
+      <div class="desc">69 個漢字及片假名詞彙，支援自動保存、隨機模式及正確率統計。</div>
+    </a>
+  </div>
+  <div class="note">上載整個資料夾內容到 GitHub repository 的根目錄後，GitHub Pages 會以此頁作為首頁。</div>
+</main>
+</body>
+</html>
