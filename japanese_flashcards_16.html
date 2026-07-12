@@ -44,6 +44,16 @@ h1{font-size:25px;margin:0;color:#374151}
 .score{height:56px;min-width:88px;border-radius:999px;font-size:19px;display:flex;align-items:center;justify-content:center;gap:8px}
 .bad{border:1px solid #fecaca;color:var(--red)}
 .good{border:1px solid #bbf7d0;color:var(--green)}
+
+.review-panel{margin-top:22px;background:white;border:1px solid #e5e7eb;border-radius:16px;padding:16px;box-shadow:0 2px 10px #0000000d}
+.review-title{font-weight:800;color:#374151;margin-bottom:12px;text-align:center}
+.review-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.review-btn{border:1px solid #d1d5db;background:white;color:#4b5563;padding:9px 13px;border-radius:999px;font-weight:700;cursor:pointer}
+.review-btn.active{background:#eff6ff;color:#2563eb;border-color:#93c5fd}
+.review-btn.correct.active{background:#f0fdf4;color:#15803d;border-color:#86efac}
+.review-btn.incorrect.active{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
+.review-note{text-align:center;color:#6b7280;font-size:13px;margin-top:10px}
+
 .reset{display:block;margin:25px auto 0;border:0;background:transparent;color:#6b7280;cursor:pointer;font-size:14px}
 .progress{margin-top:18px;text-align:center;color:#6b7280;font-size:14px}
 @media(max-width:600px){
@@ -87,6 +97,15 @@ h1{font-size:25px;margin:0;color:#374151}
   </div>
   <div class="progress" id="progressText"></div>
   <div class="progress">鍵盤：Space 翻面｜← 上一題｜→ 下一題</div>
+  <div class="review-panel">
+    <div class="review-title">重溫已標記題目</div>
+    <div class="review-actions">
+      <button id="reviewAllBtn" class="review-btn active">全部題目</button>
+      <button id="reviewCorrectBtn" class="review-btn correct">✓ 答對</button>
+      <button id="reviewIncorrectBtn" class="review-btn incorrect">✕ 答錯</button>
+    </div>
+    <div id="reviewNote" class="review-note"></div>
+  </div>
   <button class="reset" id="resetBtn">↻ 重新開始計算</button>
 </div>
 
@@ -99,14 +118,62 @@ let mode = "forward";
 let shuffle = false;
 let correctCount = 0;
 let incorrectCount = 0;
+let statuses = {};
+let reviewFilter = "all";
+const STORAGE_KEY = "jp_flashcards_16_v2";
+
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  if (saved) {
+    if (saved.statuses) statuses = saved.statuses;
+    if (saved.correctCount != null) correctCount = saved.correctCount;
+    if (saved.incorrectCount != null) incorrectCount = saved.incorrectCount;
+    if (saved.shuffle != null) shuffle = saved.shuffle;
+    if (Array.isArray(saved.order) && saved.order.length === vocabList.length) order = saved.order;
+    if (saved.currentPosition != null) currentPosition = saved.currentPosition;
+    if (saved.mode) mode = saved.mode;
+  }
+} catch (_) {}
 
 const el = id => document.getElementById(id);
 
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    order, currentPosition, mode, shuffle, correctCount, incorrectCount, statuses
+  }));
+}
+
+function filteredIndices() {
+  if (reviewFilter === "correct") return order.filter(i => statuses[i] === "correct");
+  if (reviewFilter === "incorrect") return order.filter(i => statuses[i] === "incorrect");
+  return order;
+}
+
+function ensureValidPosition() {
+  const list = filteredIndices();
+  if (list.length === 0) {
+    currentPosition = 0;
+    return;
+  }
+  if (currentPosition >= list.length) currentPosition = 0;
+}
+
 function render() {
-  const item = vocabList[order[currentPosition]];
-  el("counter").textContent = `${currentPosition + 1} / ${vocabList.length}`;
+  const visible = filteredIndices();
+  ensureValidPosition();
+  const currentIndex = visible.length ? visible[currentPosition] : 0;
+  const item = vocabList[currentIndex];
+  el("counter").textContent = visible.length ? `${currentPosition + 1} / ${visible.length}` : `0 / 0`;
   el("shuffleBtn").classList.toggle("active", shuffle);
   el("shuffleBtn").textContent = shuffle ? "隨機模式：開" : "隨機模式";
+  el("reviewAllBtn").classList.toggle("active", reviewFilter === "all");
+  el("reviewCorrectBtn").classList.toggle("active", reviewFilter === "correct");
+  el("reviewIncorrectBtn").classList.toggle("active", reviewFilter === "incorrect");
+  const correctMarked = Object.values(statuses).filter(v => v === "correct").length;
+  const incorrectMarked = Object.values(statuses).filter(v => v === "incorrect").length;
+  el("reviewCorrectBtn").textContent = `✓ 答對（${correctMarked}）`;
+  el("reviewIncorrectBtn").textContent = `✕ 答錯（${incorrectMarked}）`;
+  el("reviewNote").textContent = visible.length ? "" : "這個分類暫時沒有已標記題目。";
   el("correctCount").textContent = correctCount;
   el("wrongCount").textContent = incorrectCount;
   el("progressText").textContent = `已作答 ${correctCount + incorrectCount} 題｜正確率 ${correctCount + incorrectCount ? Math.round(correctCount/(correctCount+incorrectCount)*100) : 0}%`;
@@ -151,13 +218,24 @@ function render() {
         </div>`;
     }
   }
+  saveState();
 }
 
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function next() { isFlipped=false; currentPosition=(currentPosition+1)%vocabList.length; render(); }
-function prev() { isFlipped=false; currentPosition=(currentPosition-1+vocabList.length)%vocabList.length; render(); }
+function next() {
+  const list = filteredIndices();
+  isFlipped = false;
+  if (list.length) currentPosition = (currentPosition + 1) % list.length;
+  render();
+}
+function prev() {
+  const list = filteredIndices();
+  isFlipped = false;
+  if (list.length) currentPosition = (currentPosition - 1 + list.length) % list.length;
+  render();
+}
 function reshuffle() {
   order = vocabList.map((_, i) => i);
   for (let i = order.length - 1; i > 0; i--) {
@@ -171,10 +249,34 @@ el("card").addEventListener("click", () => {isFlipped=!isFlipped; render();});
 el("card").addEventListener("keydown", e => {if(e.key==="Enter"||e.key===" "){e.preventDefault();isFlipped=!isFlipped;render();}});
 el("nextBtn").onclick = next;
 el("prevBtn").onclick = prev;
-el("correctBtn").onclick = () => {correctCount++; next();};
-el("wrongBtn").onclick = () => {incorrectCount++; next();};
+el("correctBtn").onclick = () => {
+  const list = filteredIndices();
+  if (!list.length) return;
+  const idx = list[currentPosition];
+  const previous = statuses[idx];
+  if (previous !== "correct") {
+    if (previous === "incorrect") incorrectCount = Math.max(0, incorrectCount - 1);
+    correctCount++;
+  }
+  statuses[idx] = "correct";
+  saveState();
+  next();
+};
+el("wrongBtn").onclick = () => {
+  const list = filteredIndices();
+  if (!list.length) return;
+  const idx = list[currentPosition];
+  const previous = statuses[idx];
+  if (previous !== "incorrect") {
+    if (previous === "correct") correctCount = Math.max(0, correctCount - 1);
+    incorrectCount++;
+  }
+  statuses[idx] = "incorrect";
+  saveState();
+  next();
+};
 el("resetBtn").onclick = () => {
-  correctCount=0; incorrectCount=0; currentPosition=0; isFlipped=false;
+  correctCount=0; incorrectCount=0; statuses={}; reviewFilter="all"; currentPosition=0; isFlipped=false;
   order = vocabList.map((_, i) => i);
   if (shuffle) reshuffle();
   render();
@@ -189,6 +291,10 @@ el("shuffleBtn").onclick = () => {
 };
 el("forwardBtn").onclick = () => {mode="forward";isFlipped=false;el("forwardBtn").classList.add("active");el("reverseBtn").classList.remove("active");render();};
 el("reverseBtn").onclick = () => {mode="reverse";isFlipped=false;el("reverseBtn").classList.add("active");el("forwardBtn").classList.remove("active");render();};
+el("reviewAllBtn").onclick = () => { reviewFilter="all"; currentPosition=0; isFlipped=false; render(); };
+el("reviewCorrectBtn").onclick = () => { reviewFilter="correct"; currentPosition=0; isFlipped=false; render(); };
+el("reviewIncorrectBtn").onclick = () => { reviewFilter="incorrect"; currentPosition=0; isFlipped=false; render(); };
+
 document.addEventListener("keydown", e => {
   const tag = document.activeElement?.tagName;
   const isControl = ["BUTTON","INPUT","TEXTAREA","SELECT"].includes(tag);

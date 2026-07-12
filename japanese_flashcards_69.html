@@ -41,6 +41,16 @@ h1{font-size:25px;margin:0;color:#374151}
 .score{height:56px;min-width:88px;border-radius:999px;font-size:19px;display:flex;align-items:center;justify-content:center;gap:8px}
 .bad{border:1px solid #fecaca;color:var(--red)}
 .good{border:1px solid #bbf7d0;color:var(--green)}
+
+.review-panel{margin-top:22px;background:white;border:1px solid #e5e7eb;border-radius:16px;padding:16px;box-shadow:0 2px 10px #0000000d}
+.review-title{font-weight:800;color:#374151;margin-bottom:12px;text-align:center}
+.review-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.review-btn{border:1px solid #d1d5db;background:white;color:#4b5563;padding:9px 13px;border-radius:999px;font-weight:700;cursor:pointer}
+.review-btn.active{background:#eff6ff;color:#2563eb;border-color:#93c5fd}
+.review-btn.correct.active{background:#f0fdf4;color:#15803d;border-color:#86efac}
+.review-btn.incorrect.active{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
+.review-note{text-align:center;color:#6b7280;font-size:13px;margin-top:10px}
+
 .reset{display:block;margin:24px auto 0;border:0;background:transparent;color:#6b7280;cursor:pointer;font-size:14px}
 @media(max-width:600px){
   .app{padding:18px 12px 30px}
@@ -86,6 +96,15 @@ h1{font-size:25px;margin:0;color:#374151}
     <button class="btn score good" id="correctBtn"><span id="correctCount">0</span> ✓</button>
     <button class="btn circle" id="nextBtn" title="下一題">→</button>
   </div>
+  <div class="review-panel">
+    <div class="review-title">重溫已標記題目</div>
+    <div class="review-actions">
+      <button id="reviewAllBtn" class="review-btn active">全部題目</button>
+      <button id="reviewCorrectBtn" class="review-btn correct">✓ 答對</button>
+      <button id="reviewIncorrectBtn" class="review-btn incorrect">✕ 答錯</button>
+    </div>
+    <div id="reviewNote" class="review-note"></div>
+  </div>
   <button class="reset" id="resetBtn">↻ 清除進度並重新開始</button>
 </div>
 
@@ -100,7 +119,9 @@ let state = {
   mode: "forward",
   shuffle: false,
   correctCount: 0,
-  incorrectCount: 0
+  incorrectCount: 0,
+  statuses: {},
+  reviewFilter: "all"
 };
 
 try {
@@ -111,7 +132,15 @@ try {
 } catch (_) {}
 
 const el = id => document.getElementById(id);
-const currentItem = () => originalList[state.order[state.currentPosition]];
+function filteredIndices() {
+  if (state.reviewFilter === "correct") return state.order.filter(i => state.statuses[i] === "correct");
+  if (state.reviewFilter === "incorrect") return state.order.filter(i => state.statuses[i] === "incorrect");
+  return state.order;
+}
+const currentItem = () => {
+  const list = filteredIndices();
+  return originalList[list.length ? list[state.currentPosition] : 0];
+};
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -120,7 +149,9 @@ function save() {
     mode: state.mode,
     shuffle: state.shuffle,
     correctCount: state.correctCount,
-    incorrectCount: state.incorrectCount
+    incorrectCount: state.incorrectCount,
+    statuses: state.statuses,
+    reviewFilter: state.reviewFilter
   }));
 }
 
@@ -133,7 +164,9 @@ function render() {
   const answered = state.correctCount + state.incorrectCount;
   const accuracy = answered ? Math.round(state.correctCount / answered * 100) : 0;
 
-  el("counter").textContent = `${state.currentPosition + 1} / ${originalList.length}`;
+  const visible = filteredIndices();
+  if (state.currentPosition >= visible.length && visible.length) state.currentPosition = 0;
+  el("counter").textContent = visible.length ? `${state.currentPosition + 1} / ${visible.length}` : `0 / 0`;
   el("correctCount").textContent = state.correctCount;
   el("wrongCount").textContent = state.incorrectCount;
   el("progressText").textContent = `已作答 ${answered} 題｜正確率 ${accuracy}%`;
@@ -141,6 +174,14 @@ function render() {
   el("reverseBtn").classList.toggle("active", state.mode === "reverse");
   el("shuffleBtn").classList.toggle("active", state.shuffle);
   el("shuffleBtn").textContent = state.shuffle ? "隨機模式：開" : "隨機模式";
+  el("reviewAllBtn").classList.toggle("active", state.reviewFilter === "all");
+  el("reviewCorrectBtn").classList.toggle("active", state.reviewFilter === "correct");
+  el("reviewIncorrectBtn").classList.toggle("active", state.reviewFilter === "incorrect");
+  const correctMarked = Object.values(state.statuses).filter(v => v === "correct").length;
+  const incorrectMarked = Object.values(state.statuses).filter(v => v === "incorrect").length;
+  el("reviewCorrectBtn").textContent = `✓ 答對（${correctMarked}）`;
+  el("reviewIncorrectBtn").textContent = `✕ 答錯（${incorrectMarked}）`;
+  el("reviewNote").textContent = visible.length ? "" : "這個分類暫時沒有已標記題目。";
 
   const card = el("card");
   const content = el("content");
@@ -182,13 +223,15 @@ function render() {
 }
 
 function next() {
+  const list = filteredIndices();
   state.isFlipped = false;
-  state.currentPosition = (state.currentPosition + 1) % originalList.length;
+  if (list.length) state.currentPosition = (state.currentPosition + 1) % list.length;
   render();
 }
 function prev() {
+  const list = filteredIndices();
   state.isFlipped = false;
-  state.currentPosition = (state.currentPosition - 1 + originalList.length) % originalList.length;
+  if (list.length) state.currentPosition = (state.currentPosition - 1 + list.length) % list.length;
   render();
 }
 function reshuffle() {
@@ -209,8 +252,32 @@ el("card").onkeydown = e => {
 };
 el("nextBtn").onclick = next;
 el("prevBtn").onclick = prev;
-el("correctBtn").onclick = () => { state.correctCount++; next(); };
-el("wrongBtn").onclick = () => { state.incorrectCount++; next(); };
+el("correctBtn").onclick = () => {
+  const list = filteredIndices();
+  if (!list.length) return;
+  const idx = list[state.currentPosition];
+  const previous = state.statuses[idx];
+  if (previous !== "correct") {
+    if (previous === "incorrect") state.incorrectCount = Math.max(0, state.incorrectCount - 1);
+    state.correctCount++;
+  }
+  state.statuses[idx] = "correct";
+  save();
+  next();
+};
+el("wrongBtn").onclick = () => {
+  const list = filteredIndices();
+  if (!list.length) return;
+  const idx = list[state.currentPosition];
+  const previous = state.statuses[idx];
+  if (previous !== "incorrect") {
+    if (previous === "correct") state.correctCount = Math.max(0, state.correctCount - 1);
+    state.incorrectCount++;
+  }
+  state.statuses[idx] = "incorrect";
+  save();
+  next();
+};
 el("forwardBtn").onclick = () => { state.mode = "forward"; state.isFlipped = false; render(); };
 el("reverseBtn").onclick = () => { state.mode = "reverse"; state.isFlipped = false; render(); };
 el("shuffleBtn").onclick = () => {
@@ -225,12 +292,18 @@ el("resetBtn").onclick = () => {
   if (!confirm("確定要清除所有答題進度嗎？")) return;
   state.correctCount = 0;
   state.incorrectCount = 0;
+  state.statuses = {};
+  state.reviewFilter = "all";
   state.currentPosition = 0;
   state.isFlipped = false;
   state.order = originalList.map((_, i) => i);
   if (state.shuffle) reshuffle();
   render();
 };
+el("reviewAllBtn").onclick = () => { state.reviewFilter="all"; state.currentPosition=0; state.isFlipped=false; render(); };
+el("reviewCorrectBtn").onclick = () => { state.reviewFilter="correct"; state.currentPosition=0; state.isFlipped=false; render(); };
+el("reviewIncorrectBtn").onclick = () => { state.reviewFilter="incorrect"; state.currentPosition=0; state.isFlipped=false; render(); };
+
 document.addEventListener("keydown", e => {
   const tag = document.activeElement?.tagName;
   const isControl = ["BUTTON","INPUT","TEXTAREA","SELECT"].includes(tag);
