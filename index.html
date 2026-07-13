@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="favicon.svg">
   <link rel="manifest" href="manifest.webmanifest">
-  <title>Japanese Study Mini Apps</title>
+  <title>JAPN2003-2345-1394AW</title>
   <style>
     *{box-sizing:border-box}
     body{
@@ -133,6 +133,19 @@
       font-weight:800;
       cursor:pointer
     }
+
+    .watermark{
+      position:fixed;
+      right:8px;
+      bottom:6px;
+      font-size:8px;
+      letter-spacing:.08em;
+      opacity:.06;
+      color:#0f172a;
+      pointer-events:none;
+      user-select:none;
+      z-index:2
+    }
     @media(max-width:600px){
       main{padding:30px 14px}
       h1{font-size:30px}
@@ -141,7 +154,7 @@
 </head>
 <body>
   <main>
-    <h1>📚 Japanese Study Mini Apps</h1>
+    <h1>JAPN2003-2345-1394AW</h1>
     <div class="subtitle">選擇一個工具開始溫習</div>
 
     <div class="grid">
@@ -279,5 +292,7 @@
       if (event.key === "Escape") closeModal();
     });
   </script>
+
+  <div class="watermark" aria-hidden="true">JAPN2003-2345-1394AW</div>
 </body>
 </html>
