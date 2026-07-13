@@ -17,3 +17,10 @@ Files included:
 Your homepage will be:
 
 `https://YOUR_USERNAME.github.io/mini-apps/`
+
+
+## New in this version
+
+- Number input on both flashcard pages: type a vocabulary number and press Enter or 前往.
+- iPhone Home Screen icon and web-app metadata.
+- Upload all icon and manifest files to the repository root.

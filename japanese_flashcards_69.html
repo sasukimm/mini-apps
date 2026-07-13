@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#17324d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="JP Study">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
 <title>期終考試生字 Flashcards（69字）</title>
 <style>
 :root {
@@ -25,6 +32,13 @@ h1{font-size:25px;margin:0;color:#374151}
 .card.front{background:#333;color:white}
 .card.back{background:white;border:1px solid #e5e7eb}
 .card-inner{min-height:440px;padding:28px 38px;display:flex;flex-direction:column}
+
+.jump-box{display:flex;align-items:center;gap:6px;color:#6b7280;font-weight:700}
+.jump-input{width:64px;padding:5px 7px;border:1px solid #cbd5e1;border-radius:8px;text-align:center;font:inherit;background:white;color:#111827}
+.jump-input:focus{outline:2px solid #93c5fd;border-color:#2563eb}
+.jump-go{border:0;background:#2563eb;color:white;border-radius:8px;padding:6px 10px;font-weight:800;cursor:pointer}
+.jump-go:hover{background:#1d4ed8}
+
 .meta{display:flex;justify-content:space-between;color:#9ca3af;font-weight:600}
 .badge{font-size:12px;border:1px solid #6b7280;border-radius:6px;padding:4px 8px}
 .answer-badge{background:#eff6ff;color:var(--blue);border-color:#bfdbfe;border-radius:999px}
@@ -82,7 +96,11 @@ h1{font-size:25px;margin:0;color:#374151}
   <div id="card" class="card front" role="button" tabindex="0" aria-label="點擊翻面">
     <div class="card-inner">
       <div class="meta">
-        <span id="counter"></span>
+        <div class="jump-box">
+          <input id="jumpInput" class="jump-input" type="number" min="1" inputmode="numeric" aria-label="跳到指定生字">
+          <span>/ <span id="totalCount"></span></span>
+          <button id="jumpGoBtn" class="jump-go" type="button">前往</button>
+        </div>
         <span id="sideBadge" class="badge">點擊翻面</span>
       </div>
       <div id="content" class="center"></div>
@@ -166,7 +184,9 @@ function render() {
 
   const visible = filteredIndices();
   if (state.currentPosition >= visible.length && visible.length) state.currentPosition = 0;
-  el("counter").textContent = visible.length ? `${state.currentPosition + 1} / ${visible.length}` : `0 / 0`;
+  el("jumpInput").value = visible.length ? state.currentPosition + 1 : "";
+  el("jumpInput").max = Math.max(1, visible.length);
+  el("totalCount").textContent = visible.length;
   el("correctCount").textContent = state.correctCount;
   el("wrongCount").textContent = state.incorrectCount;
   el("progressText").textContent = `已作答 ${answered} 題｜正確率 ${accuracy}%`;
@@ -300,6 +320,24 @@ el("resetBtn").onclick = () => {
   if (state.shuffle) reshuffle();
   render();
 };
+function jumpToVocabulary() {
+  const list = filteredIndices();
+  if (!list.length) return;
+  const requested = Number.parseInt(el("jumpInput").value, 10);
+  if (!Number.isFinite(requested) || requested < 1 || requested > list.length) {
+    alert(`請輸入 1 至 ${list.length} 之間的數字。`);
+    el("jumpInput").value = state.currentPosition + 1;
+    return;
+  }
+  state.currentPosition = requested - 1;
+  state.isFlipped = false;
+  render();
+}
+el("jumpGoBtn").onclick = jumpToVocabulary;
+el("jumpInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); jumpToVocabulary(); }
+});
+
 el("reviewAllBtn").onclick = () => { state.reviewFilter="all"; state.currentPosition=0; state.isFlipped=false; render(); };
 el("reviewCorrectBtn").onclick = () => { state.reviewFilter="correct"; state.currentPosition=0; state.isFlipped=false; render(); };
 el("reviewIncorrectBtn").onclick = () => { state.reviewFilter="incorrect"; state.currentPosition=0; state.isFlipped=false; render(); };
