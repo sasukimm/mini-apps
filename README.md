@@ -5,22 +5,9 @@ Files included:
 - `index.html` — home page
 - `japanese_flashcards_16.html` — 16 onomatopoeia/mimetic-word cards
 - `japanese_flashcards_69.html` — 69 exam vocabulary cards
+- `japanese_grammar_flashcards.html` — Lesson 9–12 grammar flashcards
+- PWA and iPhone Home Screen icon files
 
 ## GitHub Pages
 
-1. Upload all three HTML files to the root of your `mini-apps` repository.
-2. Go to **Settings → Pages**.
-3. Select **Deploy from a branch**.
-4. Choose **main** and **/(root)**.
-5. Save and wait for deployment.
-
-Your homepage will be:
-
-`https://YOUR_USERNAME.github.io/mini-apps/`
-
-
-## New in this version
-
-- Number input on both flashcard pages: type a vocabulary number and press Enter or 前往.
-- iPhone Home Screen icon and web-app metadata.
-- Upload all icon and manifest files to the repository root.
+Upload every file in this folder to the root of the same GitHub repository, replacing the older files. Keep all filenames unchanged.
