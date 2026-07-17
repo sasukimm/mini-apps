@@ -20,11 +20,59 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Not
 .exam-nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px}
 .exam-nav .btn{min-width:132px}
 
+
+.tabs-wrap{position:relative;margin-top:18px}
+.tabs-wrap::after{
+  content:"";
+  position:absolute;
+  top:0;right:0;
+  width:54px;height:100%;
+  pointer-events:none;
+  border-radius:0 18px 18px 0;
+  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.96));
+}
+.tabs-hint{
+  display:none;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  margin:7px 8px 0;
+  color:#64748b;
+  font-size:13px;
+  font-weight:750;
+}
+.tabs-hint .arrow{font-size:18px;animation:tabNudge 1.4s ease-in-out infinite}
+@keyframes tabNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+.tabs{scrollbar-width:none;-ms-overflow-style:none}
+.tabs::-webkit-scrollbar{display:none}
+@media(max-width:650px){
+  .tabs-wrap::after{width:46px}
+  .tabs-hint{display:flex}
+  .tabs{padding-right:42px}
+}
+
 @media(max-width:650px){.app{padding:68px 10px 35px}.hero{padding:22px 18px}.essay{font-size:17px;line-height:1.9}.titlebar{align-items:flex-start;flex-direction:column}.tabs{top:5px}.summary-table{font-size:14px}}
+
+@media(max-width:650px){
+  .exam-nav{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    width:100%;
+  }
+  .exam-nav .btn{
+    min-width:0;
+    width:100%;
+    padding:11px 6px;
+    font-size:14px;
+    white-space:nowrap;
+  }
+}
+
 </style></head><body>
 <a class="home" href="index.html">⌂ <span>首頁</span></a><main class="app">
 <section class="hero"><h1>📖 期終考試閱讀理解</h1><p>第9–12課課文原文、繁體中文翻譯、閱讀理解選擇題、表格逐格練習、單字練習、模擬考試及錯題重溫。</p></section>
-<nav class="tabs" id="tabs"></nav><section class="toolbar"><div class="chips" id="lessonChips"></div><span id="saveText">進度已自動保存</span></section><section id="content"></section>
+<div class="tabs-wrap"><nav class="tabs" id="tabs"></nav></div><div class="tabs-hint"><span>左右滑動查看更多</span><span class="arrow">→</span></div><section class="toolbar"><div class="chips" id="lessonChips"></div><span id="saveText">進度已自動保存</span></section><section id="content"></section>
 </main>
 <div id="essayModal" class="modal hidden">
   <div class="modal-card">
