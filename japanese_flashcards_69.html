@@ -73,9 +73,15 @@ h1{font-size:25px;margin:0;color:#374151}
   .controls{gap:10px}
   .score{min-width:75px}
 }
+
+.home-fab{position:fixed;top:16px;left:16px;z-index:999;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.94);color:#17324d;border:1px solid #dbe4ee;text-decoration:none;font-weight:800;box-shadow:0 8px 24px rgba(15,23,42,.14);backdrop-filter:blur(10px);transition:.18s}
+.home-fab:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,23,42,.2)}
+@media(max-width:600px){.home-fab{top:10px;left:10px;padding:9px 12px;font-size:14px}.app{padding-top:64px!important}}
+
 </style>
 </head>
 <body>
+<a class="home-fab" href="index.html" aria-label="返回首頁">⌂ <span>首頁</span></a>
 <div class="app">
   <div class="top">
     <h1>期終考試生字（69字）</h1>
