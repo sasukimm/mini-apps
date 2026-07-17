@@ -12,6 +12,37 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Not
 .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:15px}.btn{border:0;border-radius:13px;padding:11px 17px;font-weight:850;cursor:pointer}.primary{background:#2563eb;color:#fff}.secondary{background:#eef2f7;color:#475569}.good{background:#e5f6ee;color:#126447}.bad{background:#ffedf0;color:#9f2733}.feedback{padding:12px 14px;border-radius:12px;margin-top:13px;line-height:1.5}.ok{background:#e8f8f0;color:#126447}.no{background:#fff0f2;color:#982534}.hidden{display:none!important}
 .token-area{min-height:75px;border:2px dashed #cbd5e1;border-radius:15px;padding:13px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:14px}.token{border:1px solid #b8caDA;background:#edf5fb;color:#17324d;border-radius:11px;padding:9px 12px;font-size:18px;font-weight:850}.quiz-choice{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;padding:14px;border-radius:13px;margin:9px 0;font-size:18px}.quiz-choice.correct{background:#e8f8f0;border-color:#8bcbae}.quiz-choice.wrong{background:#fff0f2;border-color:#e6a1aa}
 .modal{position:fixed;inset:0;background:#0f172a8f;display:flex;align-items:center;justify-content:center;padding:18px;z-index:100}.modal-card{max-width:620px;width:100%;background:#fff;border-radius:22px;padding:23px;box-shadow:0 20px 60px #0005}.modal-card h2{color:#17324d;font-size:28px;margin:0 0 5px}
+
+.tabs-wrap{position:relative;margin-top:18px}
+.tabs-wrap::after{
+  content:"";
+  position:absolute;
+  top:0;right:0;
+  width:56px;height:100%;
+  pointer-events:none;
+  border-radius:0 18px 18px 0;
+  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.98));
+}
+.tabs-hint{
+  display:none;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  margin:7px 10px 0;
+  color:#64748b;
+  font-size:13px;
+  font-weight:800;
+}
+.tabs-hint .arrow{font-size:18px;animation:tabNudge 1.3s ease-in-out infinite}
+@keyframes tabNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+.tabs{scrollbar-width:none;-ms-overflow-style:none}
+.tabs::-webkit-scrollbar{display:none}
+@media(max-width:650px){
+  .tabs-wrap::after{width:48px}
+  .tabs-hint{display:flex}
+  .tabs{padding-right:48px}
+}
+
 @media(max-width:650px){.app{padding:68px 10px 35px}.hero{padding:22px 18px}.line{grid-template-columns:1fr;gap:2px}.speaker{text-align:left;font-size:13px}.jp{font-size:17px}.tabs{top:5px}.dialog-title{align-items:flex-start;flex-direction:column}.studybox{min-height:470px}}
 </style></head><body>
 <a class="home-fab" href="index.html">⌂ <span>首頁</span></a>
