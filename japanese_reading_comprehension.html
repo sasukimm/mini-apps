@@ -26,7 +26,14 @@ const tabs=[["original","原文"],["translation","中文翻譯"],["questions","�
 function save(){localStorage.setItem(KEY,JSON.stringify(s))}
 function nav(){ $("tabs").innerHTML=tabs.map(([k,t])=>`<button class="tab ${s.tab===k?"active":""}" onclick="setTab('${k}')">${t}</button>`).join(""); $("lessonChips").innerHTML=DATA.map(x=>`<button class="chip ${s.lesson===x.lesson?"active":""}" onclick="setLesson(${x.lesson})">第${x.lesson}課</button>`).join("")}
 function setTab(t){s.tab=t;s.qIndex=0;s.vIndex=0;s.answered=false;if(t==="exam")startExam();render()}
-function setLesson(n){s.lesson=n;s.qIndex=0;s.vIndex=0;s.answered=false;render()}
+function setLesson(n){
+  s.lesson=n;
+  s.qIndex=0;
+  s.vIndex=0;
+  s.answered=false;
+  if(s.tab==="exam") startExam();
+  render();
+}
 function render(){nav();const c=$("content");if(s.tab==="original")c.innerHTML=essayHTML(false);if(s.tab==="translation")c.innerHTML=essayHTML(true);if(s.tab==="questions")c.innerHTML=questionHTML(lesson().questions,"q");if(s.tab==="table")c.innerHTML=tableHTML();if(s.tab==="vocab")c.innerHTML=vocabHTML();if(s.tab==="exam")c.innerHTML=examHTML();if(s.tab==="wrong")c.innerHTML=wrongHTML();save()}
 function essayHTML(zh){const x=lesson(),arr=zh?x.zh:x.jp;return `<section class="panel"><div class="titlebar"><div><span class="badge">第${x.lesson}課</span><h2>${x.title}</h2></div><div class="control"><button class="btn secondary" onclick="changeFont(-1)">A−</button><button class="btn secondary" onclick="changeFont(1)">A＋</button></div></div><article class="essay" style="font-size:${s.font}px">${arr.map(p=>`<p class="para">${p.replace(/^([^：]{1,8})：/,'<span class="speaker">$1：</span>')}</p>`).join("")}</article></section>`}
 function changeFont(n){s.font=Math.max(15,Math.min(24,s.font+n));render()}
@@ -36,7 +43,16 @@ function moveQ(n){s.qIndex=(s.qIndex+n+lesson().questions.length)%lesson().quest
 function vocabHTML(){const list=lesson().vocab,i=s.vIndex%list.length,q=list[i];let obj={q:q[0],choices:q[1],a:q[2]};return `<section class="panel qa"><div class="progress"><span>第${s.lesson}課 · 單字練習</span><span>${i+1} / ${list.length}</span></div><div class="question"><h3>${obj.q}</h3>${obj.choices.map((x,j)=>`<button class="choice" onclick="answer(this,${j},${obj.a},'v',${i})">${x}</button>`).join("")}<div id="fb"></div></div><div class="control"><button class="btn secondary" onclick="moveV(-1)">← 上一題</button><button class="btn primary" onclick="moveV(1)">下一題 →</button></div></section>`}
 function moveV(n){s.vIndex=(s.vIndex+n+lesson().vocab.length)%lesson().vocab.length;s.answered=false;render()}
 function tableHTML(){if(s.lesson!==10)return `<section class="panel"><div class="note">表格題主要出現在第10課。請選擇「第10課」進行逐格選擇題練習。</div></section>`;const rows=[["失敗の種類","やり忘れる失敗","やってしまう失敗"],["調べる番号","奇数番号","偶数番号"],["第一判定","4つ以上 → ぼんやり","3つ以上 → あわて者"],["第二判定","6つ以上 → かなりぼんやり","5つ以上 → かなりあわて者"],["改善方法","メモ・チェックリスト・手がかり","深呼吸・指差し確認"]];return `<section class="panel"><div class="titlebar"><h2>第10課 表格完成練習</h2><span class="badge">閱讀問題內已逐格轉成選擇題</span></div><div class="note">最佳做法是先到「閱讀問題」逐格回答，再用下表作完整總結。手機上不用橫向拖動大型空白表格。</div><table class="summary-table"><tr><th>項目</th><th>記憶型</th><th>注意型</th></tr>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}</table></section>`}
-function startExam(){let all=[];DATA.forEach(d=>{d.questions.forEach((q,i)=>all.push({lesson:d.lesson,type:"q",idx:i,...q}));d.vocab.forEach((v,i)=>all.push({lesson:d.lesson,type:"v",idx:i,q:v[0],choices:v[1],a:v[2],why:"單字填空題"}))});s.exam=all.sort(()=>Math.random()-.5).slice(0,15);s.examIndex=0;s.score=0;s.answered=false}
+function startExam(){
+  const d=lesson();
+  let all=[];
+  d.questions.forEach((q,i)=>all.push({lesson:d.lesson,type:"q",idx:i,...q}));
+  d.vocab.forEach((v,i)=>all.push({lesson:d.lesson,type:"v",idx:i,q:v[0],choices:v[1],a:v[2],why:"單字填空題"}));
+  s.exam=all.sort(()=>Math.random()-.5);
+  s.examIndex=0;
+  s.score=0;
+  s.answered=false;
+}
 function examHTML(){if(!s.exam.length)startExam();if(s.examIndex>=s.exam.length)return `<section class="panel result"><h2>模擬考試完成</h2><strong>${s.score} / ${s.exam.length}</strong><div class="control" style="justify-content:center;margin-top:20px"><button class="btn primary" onclick="startExam();render()">重新挑戰</button></div></section>`;let q=s.exam[s.examIndex];return `<section class="panel qa"><div class="progress"><span>模擬考試 · 第${q.lesson}課</span><span>${s.examIndex+1} / ${s.exam.length}</span></div><div class="question"><h3>${q.q}</h3>${q.choices.map((x,j)=>`<button class="choice" onclick="answerExam(this,${j})">${x}</button>`).join("")}<div id="fb"></div></div></section>`}
 function answerExam(btn,pick){if(s.answered)return;s.answered=true;let q=s.exam[s.examIndex],ok=pick===q.a;document.querySelectorAll(".choice").forEach((b,j)=>{if(j===q.a)b.classList.add("correct")});if(!ok)btn.classList.add("wrong");if(ok)s.score++;let key=`${q.lesson}-${q.type}-${q.idx}`;if(ok)s.wrong=s.wrong.filter(x=>x!==key);else if(!s.wrong.includes(key))s.wrong.push(key);$("fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ 正確":"✕ 答錯"}<br>${q.why||"請重新查看課文內容。"}</div><button class="btn primary" style="margin-top:12px" onclick="s.examIndex++;s.answered=false;render()">下一題</button>`;save()}
 function wrongHTML(){let qs=[];s.wrong.forEach(key=>{let [l,t,i]=key.split("-"),d=DATA.find(x=>x.lesson===Number(l));if(!d)return;if(t==="q"){let q=d.questions[Number(i)];qs.push({lesson:l,key,q:q.q,choices:q.choices,a:q.a,why:q.why})}else{let v=d.vocab[Number(i)];qs.push({lesson:l,key,q:v[0],choices:v[1],a:v[2],why:"請留意正確詞語和整句搭配。"})}});if(!qs.length)return `<section class="panel"><div class="note">目前沒有錯題。閱讀問題、單字練習或模擬考試中答錯的題目會自動加入這裡。</div></section>`;let q=qs[s.qIndex%qs.length];return `<section class="panel qa"><div class="progress"><span>錯題重溫 · 第${q.lesson}課</span><span>${s.qIndex%qs.length+1} / ${qs.length}</span></div><div class="question"><h3>${q.q}</h3>${q.choices.map((x,j)=>`<button class="choice" onclick="answerWrong(this,${j},${q.a},'${q.key}')">${x}</button>`).join("")}<div id="fb"></div></div><div class="control"><button class="btn primary" onclick="s.qIndex++;s.answered=false;render()">下一題 →</button></div></section>`}
