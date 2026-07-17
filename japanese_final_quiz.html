@@ -7,7 +7,7 @@
 :root{--blue:#2563eb;--navy:#17324d;--green:#15803d;--red:#dc2626;--purple:#7c3aed;--bg:#f8fafc;--text:#1f2937}
 *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Noto Sans JP",sans-serif;background:var(--bg);color:var(--text)}
 .app{max-width:920px;margin:auto;padding:24px 15px 45px} .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px} h1{font-size:26px;margin:0;color:var(--navy)}
-.home{text-decoration:none;background:white;border:1px solid #dbe3ee;padding:9px 13px;border-radius:10px;color:#475569;font-weight:700}
+.home-fab{position:fixed;top:16px;left:16px;z-index:999;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.94);color:#17324d;border:1px solid #dbe4ee;text-decoration:none;font-weight:800;box-shadow:0 8px 24px rgba(15,23,42,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:.18s}.home-fab:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,23,42,.2)}
 .panel{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:20px;box-shadow:0 8px 24px #0000000b;margin-bottom:16px}
 .setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px} label{display:block;font-size:13px;color:#64748b;font-weight:800;margin-bottom:7px} select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:16px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px} button{font:inherit;cursor:pointer} .primary{border:0;background:var(--blue);color:white;padding:12px 18px;border-radius:11px;font-weight:800} .secondary{border:1px solid #cbd5e1;background:white;color:#475569;padding:11px 16px;border-radius:11px;font-weight:750}
@@ -18,9 +18,9 @@
 .feedback{display:none;margin-top:17px;padding:15px;border-radius:13px;line-height:1.65} .feedback.good{display:block;background:#f0fdf4;border:1px solid #bbf7d0} .feedback.bad{display:block;background:#fef2f2;border:1px solid #fecaca} .explain{margin-top:7px;color:#475569}
 .nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px} .hidden{display:none!important} .results h2{margin-top:0} .score-big{font-size:44px;font-weight:900;color:var(--blue)} .breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0} .mini{border:1px solid #e2e8f0;border-radius:12px;padding:12px}
 .writing textarea{width:100%;min-height:210px;padding:14px;border:1px solid #cbd5e1;border-radius:12px;font:inherit;line-height:1.7} .model{display:none;margin-top:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:15px;line-height:1.8} ul{line-height:1.8}
-@media(max-width:600px){.app{padding:15px 10px 35px}.panel{padding:16px}.question{font-size:21px}.choice{font-size:16px}}
-</style></head><body><div class="app">
-<div class="top"><h1>📝 期終考試 Grammar Quiz</h1><a class="home" href="index.html">← 返回首頁</a></div>
+@media(max-width:600px){.home-fab{top:10px;left:10px;padding:9px 12px;font-size:14px}.app{padding:66px 10px 35px}.panel{padding:16px}.question{font-size:21px}.choice{font-size:16px}}
+</style></head><body><a class="home-fab" href="index.html" aria-label="返回首頁">⌂ <span>首頁</span></a><div class="app">
+<div class="top"><h1>📝 期終考試 Grammar Quiz</h1></div>
 <section id="setup" class="panel"><div class="setup-grid">
 <div><label>課次</label><select id="lessonSel"><option value="all">第9–12課（混合）</option><option value="9">第9課</option><option value="10">第10課</option><option value="11">第11課</option><option value="12">第12課</option></select></div>
 <div><label>模式</label><select id="modeSel"><option value="practice">練習模式（即時解釋）</option><option value="exam">模擬考試（最後顯示答案）</option><option value="wrong">錯題重溫</option><option value="writing">作文練習</option></select></div>
