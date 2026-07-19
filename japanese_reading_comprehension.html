@@ -2,7 +2,7 @@
 <style>
 *{box-sizing:border-box}:root{--navy:#17324d;--blue:#2563eb;--ink:#1f2937;--muted:#64748b;--line:#dce5ef;--green:#167353;--red:#b83242}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Noto Sans JP",sans-serif;background:linear-gradient(180deg,#eef4fa,#f8fafc 270px);color:var(--ink)}
-.home{position:fixed;top:16px;left:16px;z-index:50;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:#fffffff2;color:var(--navy);border:1px solid #dbe4ee;text-decoration:none;font-weight:800;box-shadow:0 8px 24px #0f172a24}
+.home-fab{position:fixed;top:16px;left:16px;z-index:50;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:#fffffff2;color:var(--navy);border:1px solid #dbe4ee;text-decoration:none;font-weight:800;box-shadow:0 8px 24px #0f172a24;backdrop-filter:blur(10px)}
 .app{max-width:1080px;margin:auto;padding:48px 18px 60px}.hero{padding:30px;border-radius:26px;background:linear-gradient(135deg,#17324d,#24547e);color:#fff;box-shadow:0 18px 44px #17324d2e}.hero h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}.hero p{margin:0;color:#dce8f3;line-height:1.6}
 .tabs{display:flex;gap:8px;overflow-x:auto;padding:8px;margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:18px;position:sticky;top:10px;z-index:20;box-shadow:0 8px 24px #0f172a0c}.tab{white-space:nowrap;border:0;background:transparent;color:#64748b;padding:11px 14px;border-radius:12px;font-weight:800;cursor:pointer}.tab.active{background:var(--navy);color:#fff}
 .toolbar,.panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:16px;box-shadow:0 8px 22px #0f172a0b}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:999px;font-weight:800;color:#475569;cursor:pointer}.chip.active{background:#e7f0f8;color:var(--navy);border-color:#94b6d2}
@@ -14,7 +14,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Not
 .result{text-align:center;padding:30px}.result strong{font-size:50px;color:var(--navy)}.hidden{display:none!important}
 
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:18px;z-index:100}
-.modal-card{width:min(900px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.modal-card{position:relative;width:min(900px,100%);max-height:88vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 28px 80px rgba(0,0,0,.4)}
 .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-22px;background:#fff;padding:4px 0 14px;border-bottom:1px solid var(--line);z-index:2}
 .modal-head h2{margin:0;color:var(--navy)}
 .exam-nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px}
@@ -88,7 +88,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Not
 }
 
 </style><script src="theme.js"></script></head><body>
-<a class="home" href="index.html">⌂ <span>首頁</span></a><main class="app">
+<a class="home-fab" href="index.html" aria-label="返回首頁">⌂ <span>首頁</span></a><main class="app">
 <section class="hero"><h1>📖 期終考試閱讀理解</h1><p>第9–12課課文原文、繁體中文翻譯、閱讀理解、原文找答案、完整課本單字拖放練習、模擬考試及錯題重溫。</p></section>
 <nav class="tabs" id="tabs"></nav><section class="toolbar"><div class="chips" id="lessonChips"></div><span id="saveText">進度已自動保存</span></section><section id="content"></section>
 </main>
@@ -369,8 +369,11 @@ function showEssayModal(){
   $("essayModalTitle").textContent=`第${d.lesson}課　${d.title}`;
   $("essayModalBody").innerHTML=d.jp.map(p=>`<p class="para">${p.replace(/^([^：]{1,8})：/,'<span class="speaker">$1：</span>')}</p>`).join("");
   $("essayModal").classList.remove("hidden");
+  document.body.style.overflow="hidden";
 }
-function closeEssayModal(){$("essayModal").classList.add("hidden")}
+function closeEssayModal(){$("essayModal").classList.add("hidden");document.body.style.overflow=""}
+$('essayModal').addEventListener('click',e=>{if(e.target===$('essayModal'))closeEssayModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('essayModal').classList.contains('hidden'))closeEssayModal()});
 function wrongHTML(){let qs=[];s.wrong.forEach(key=>{let parts=key.split("-");if(parts.length>3)return;let [l,t,i]=parts,d=DATA.find(x=>x.lesson===Number(l));if(!d)return;if(t==="q"){let q=d.questions[Number(i)];qs.push({lesson:l,key,q:q.q,choices:q.choices,a:q.a,why:q.why})}else{let v=d.vocab[Number(i)];qs.push({lesson:l,key,q:v[0],choices:v[1],a:v[2],why:"請留意正確詞語和整句搭配。"})}});if(!qs.length)return `<section class="panel"><div class="note">目前沒有錯題。閱讀問題、單字練習或模擬考試中答錯的題目會自動加入這裡。</div></section>`;let q=qs[s.qIndex%qs.length];return `<section class="panel qa"><div class="progress"><span>錯題重溫 · 第${q.lesson}課</span><span>${s.qIndex%qs.length+1} / ${qs.length}</span></div><div class="question"><h3>${q.q}</h3>${q.choices.map((x,j)=>`<button class="choice" onclick="answerWrong(this,${j},${q.a},'${q.key}')">${x}</button>`).join("")}<div id="fb"></div></div><div class="control"><button class="btn primary" onclick="s.qIndex++;s.answered=false;render()">下一題 →</button></div></section>`}
 function answerWrong(btn,pick,ans,key){if(s.answered)return;s.answered=true;document.querySelectorAll(".choice").forEach((b,j)=>{if(j===ans)b.classList.add("correct")});let ok=pick===ans;if(!ok)btn.classList.add("wrong");if(ok)s.wrong=s.wrong.filter(x=>x!==key);$("fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ 已從錯題移除":"✕ 再看一次正確選項"}</div>`;save()}
 render();
