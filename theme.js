@@ -87,3 +87,34 @@
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',createControl);else createControl();
 })();
+
+(function(){
+  const initialized=new WeakSet();
+  const interactiveSelector='button,input,textarea,select,a,[draggable="true"],[data-no-swipe]';
+  window.setupFlashcardSwipe=function({element,onSwipeLeft,onSwipeRight,threshold=50}){
+    if(!element||initialized.has(element))return;
+    initialized.add(element);
+    let startX=0,startY=0,tracking=false,suppressClick=false;
+    element.classList.add('swipe-enabled');
+    element.addEventListener('touchstart',e=>{
+      if(e.touches.length!==1||e.target.closest(interactiveSelector)){tracking=false;return}
+      startX=e.touches[0].clientX;startY=e.touches[0].clientY;tracking=true;
+    },{passive:true});
+    element.addEventListener('touchend',e=>{
+      if(!tracking||!e.changedTouches.length)return;
+      tracking=false;
+      const deltaX=e.changedTouches[0].clientX-startX,deltaY=e.changedTouches[0].clientY-startY;
+      if(Math.abs(deltaX)<threshold||Math.abs(deltaX)<=Math.abs(deltaY)*1.2)return;
+      suppressClick=true;
+      const goNext=deltaX<0,animation=goNext?'flashcard-swipe-left':'flashcard-swipe-right';
+      element.classList.add(animation);
+      setTimeout(()=>{element.classList.remove(animation);(goNext?onSwipeLeft:onSwipeRight)()},170);
+      setTimeout(()=>{suppressClick=false},420);
+    },{passive:true});
+    element.addEventListener('touchcancel',()=>{tracking=false},{passive:true});
+    element.addEventListener('click',e=>{if(!suppressClick)return;e.preventDefault();e.stopImmediatePropagation();suppressClick=false},true);
+  };
+  const style=document.createElement('style');
+  style.textContent='.swipe-enabled{touch-action:pan-y}.flashcard-swipe-left{animation:flashcardSwipeLeft .17s ease-out}.flashcard-swipe-right{animation:flashcardSwipeRight .17s ease-out}@keyframes flashcardSwipeLeft{to{transform:translateX(-34px);opacity:.55}}@keyframes flashcardSwipeRight{to{transform:translateX(34px);opacity:.55}}';
+  document.head.appendChild(style);
+})();
